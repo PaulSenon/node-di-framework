@@ -1,0 +1,40 @@
+{
+  "name": "ennodifw",
+  "version": "1.0.0",
+  "description": "Euronews node js dependency injection framewrok inspired by Symfony DI. The name \"enodifw\" stends for \"EuroNews NoDe Dependency Injection FrameWork\".",
+  "main": "index.js",
+  "author": {
+    "email": "paul.senon@euronews.com",
+    "name": "Paul SENON"
+  },
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "npm run dev",
+    "test": "jest",
+    "build": "tsc",
+    "lint": "eslint . & echo 'lint complete'",
+    "dev": "ts-node-dev --respawn --transpileOnly ./src/app.ts",
+    "prod": "tsc && node ./built/src/app.js",
+    "debug": "tsc && node --inspect ./built/src/app.js"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.23",
+    "@typescript-eslint/eslint-plugin": "^2.9.0",
+    "@typescript-eslint/parser": "^2.9.0",
+    "eslint": "^6.7.1",
+    "eslint-config-airbnb-typescript": "^6.3.1",
+    "eslint-config-prettier": "^6.7.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jest": "^23.0.5",
+    "eslint-plugin-prettier": "^3.1.1",
+    "jest": "^24.9.0",
+    "prettier": "^1.19.1",
+    "ts-jest": "^24.2.0",
+    "ts-node-dev": "^1.0.0-pre.44",
+    "typescript": "^3.7.2"
+  },
+  "dependencies": {
+    "@types/node": "^12.12.14"
+  }
+}
