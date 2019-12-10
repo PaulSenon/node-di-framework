@@ -1,3 +1,4 @@
+/* eslint-disable */
 class Service {
     constructor() {
         this.setContainer = this.setContainer.bind(this);

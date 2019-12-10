@@ -1,6 +1,6 @@
-import ServiceInterface from "./ServiceInterface";
+import ServiceInterface from './ServiceInterface';
 
 export default interface ServiceConfig {
     class: ServiceInterface;
-    args: Object;
+    args: Record<string, string>;
 }

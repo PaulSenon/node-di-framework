@@ -1,6 +1,4 @@
 {
-    "eslint.alwaysShowStatus": true,
-    "eslint.autoFixOnSave": true,
     "eslint.validate": [
         "javascript",
         "javascriptreact",
@@ -8,4 +6,11 @@
         { "language": "typescriptreact", "autoFix": true }
     ],
     "eslint.packageManager": "yarn",
+    "eslint.alwaysShowStatus": true,
+    "eslint.autoFixOnSave": true,
+    "eslint.trace.server": "messages",
+    "files.autoSave": "off",
+    "editor.formatOnSave": false,
+    "javascript.format.enable": false,
+    "vetur.validation.template": false,
 }

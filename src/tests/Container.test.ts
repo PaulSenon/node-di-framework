@@ -1,7 +1,10 @@
+import AbstractService from '../Interfaces/AbstractService';
 import Container from '../Container';
+import TestService1 from './test-class/testService1';
+import TestService2 from './test-class/testService2';
 
 describe('Dependency Injection Container Tests', () => {
-    describe('Test Properties', () => {
+    describe('Properties tests', () => {
         it('Should register a valid property (from scratch)', () => {
             const container = new Container();
             const testProp = { name: 'prop-type-string', value: 'test' };
@@ -61,17 +64,114 @@ describe('Dependency Injection Container Tests', () => {
             };
 
             container.registerProperties(testProps);
-            expect(sp);
+            expect(container.getProperties()).toEqual(testProps);
+            expect(container.getProperty('prop1')).toBe(testProps.prop1);
+            expect(container.getProperty('prop2')).toBe(testProps.prop2);
         });
-        it('Should set multiple properties from without collision', () => {
+
+        it('Should set multiple properties without collision', () => {
             const container = new Container();
+            const testProps = {
+                prop1: 'value1',
+                prop2: 'value2',
+            };
+            container.registerProperties(testProps);
+            const additionalTestProps = {
+                prop3: 'value3',
+                prop4: 'value4',
+            };
+            container.registerProperties(additionalTestProps);
+            expect(container.getProperties()).toEqual({ ...testProps, ...additionalTestProps });
+            expect(Object.keys(container.getProperties()).length).toBe(4);
         });
+
         it('Should set multiple properties with override', () => {
             const container = new Container();
+            const testProps = {
+                prop1: 'value1',
+                prop2: 'value2',
+            };
+            container.registerProperties(testProps);
+            expect(container.getProperty('prop1')).toBe(testProps.prop1);
+            const additionalTestProps = {
+                prop1: 'value3',
+                prop4: 'value4',
+            };
+            container.registerProperties(additionalTestProps);
+            expect(container.getProperties()).toEqual({ ...testProps, ...additionalTestProps });
+            expect(container.getProperty('prop1')).toBe(additionalTestProps.prop1);
+            expect(Object.keys(container.getProperties()).length).toBe(3);
         });
     });
 
-    // describe('Test Properties', () => {
-    //     it('Should ')
-    // });
+    describe('Services tests', () => {
+        it('Should register a valid service using depending on some properties (righ order)', () => {
+            const container = new Container();
+            const testProps = {
+                prop1: 'value1',
+                prop2: 'value2',
+            };
+            container.registerProperties(testProps);
+
+            container.registerService('test-service1', {
+                clazz: TestService1.prototype,
+                args: {
+                    arg1: '%prop1%',
+                },
+                lazy: false,
+            });
+
+            expect((container.getService('test-service1') as TestService1).getArg1()).toBe(testProps.prop1);
+        });
+        it('Should NOT register a valid service using depending on somenot yet registered some properties (reverse order)', () => {
+            const container = new Container();
+
+            container.registerService('test-service1', {
+                clazz: TestService1.prototype,
+                args: {
+                    arg1: '%prop1%',
+                },
+                lazy: false,
+            });
+
+            const testProps = {
+                prop1: 'value1',
+                prop2: 'value2',
+            };
+            container.registerProperties(testProps);
+
+            expect(container.getService('test-service1')).toBeUndefined();
+        });
+        it('Should register a valid service using depending on other properties & services', () => {
+            const container = new Container();
+            const testProps = {
+                prop1: 'value1',
+                prop2: 'value2',
+            };
+            container.registerProperties(testProps);
+
+            container.registerService('test-service1', {
+                clazz: TestService1.prototype,
+                args: {
+                    arg1: '%prop1%',
+                },
+                lazy: false,
+            });
+
+            expect((container.getService('test-service1') as TestService1).getArg1()).toBe(testProps.prop1);
+
+            container.registerService('test-service2', {
+                clazz: TestService2.prototype,
+                args: {
+                    arg2: '%prop2%',
+                    arg3: '@test-service1',
+                },
+                lazy: false,
+            });
+
+            expect((container.getService('test-service2') as TestService2).getArg2()).toBe(testProps.prop2);
+            expect((container.getService('test-service2') as TestService2).getArg3()).toBeInstanceOf(TestService1);
+            expect((container.getService('test-service2') as TestService2).getArg3().getArg1()).toBe(testProps.prop1);
+        });
+    });
 });
