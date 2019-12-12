@@ -105,7 +105,23 @@ describe('Dependency Injection Container Tests', () => {
     });
 
     describe('Services tests', () => {
-        it('Should register a valid service using depending on some properties (righ order)', () => {
+        it('Should register a valid service injecting string', () => {
+            const container = new Container();
+
+            container.registerService('test-service1', {
+                clazz: TestService1.prototype,
+                args: {
+                    arg1: 'value1',
+                },
+                lazy: false,
+            });
+
+            // expect service to be instanciated
+            expect(container.getServices()['test-service1'].instance).toBeInstanceOf(TestService1);
+
+            expect((container.getService('test-service1') as TestService1).getArg1()).toBe('value1');
+        });
+        it('Should register a valid service depending on some properties (righ order)', () => {
             const container = new Container();
             const testProps = {
                 prop1: 'value1',
@@ -120,29 +136,14 @@ describe('Dependency Injection Container Tests', () => {
                 },
                 lazy: false,
             });
+
+            // expect service to be instanciated
+            expect(container.getServices()['test-service1'].instance).toBeInstanceOf(TestService1);
 
             expect((container.getService('test-service1') as TestService1).getArg1()).toBe(testProps.prop1);
         });
-        it('Should NOT register a valid service using depending on somenot yet registered some properties (reverse order)', () => {
-            const container = new Container();
 
-            container.registerService('test-service1', {
-                clazz: TestService1.prototype,
-                args: {
-                    arg1: '%prop1%',
-                },
-                lazy: false,
-            });
-
-            const testProps = {
-                prop1: 'value1',
-                prop2: 'value2',
-            };
-            container.registerProperties(testProps);
-
-            expect(container.getService('test-service1')).toBeUndefined();
-        });
-        it('Should register a valid service using depending on other properties & services', () => {
+        it('Should register a valid lazy loaded service depending on some properties (righ order)', () => {
             const container = new Container();
             const testProps = {
                 prop1: 'value1',
@@ -155,10 +156,68 @@ describe('Dependency Injection Container Tests', () => {
                 args: {
                     arg1: '%prop1%',
                 },
-                lazy: false,
+                lazy: true,
             });
 
+            // expect service not instanciated
+            expect(container.getServices()['test-service1'].instance).toBeUndefined();
+
+            // expect service to be instanciated on the fly
             expect((container.getService('test-service1') as TestService1).getArg1()).toBe(testProps.prop1);
+        });
+        it('Should NOT register a valid service depending on some invalid/not-yet-registered properties', () => {
+            const container = new Container();
+
+            const t = (): void => {
+                container.registerService('test-service1', {
+                    clazz: TestService1.prototype,
+                    args: {
+                        arg1: '%prop1%',
+                    },
+                    lazy: false,
+                });
+            };
+
+            expect(() => t()).toThrowError();
+        });
+        it('Should register a valid lazy service depending on some not yet registered properties (reverse order)', () => {
+            const container = new Container();
+
+            container.registerService('test-service1', {
+                clazz: TestService1.prototype,
+                args: {
+                    arg1: '%prop1%',
+                },
+                lazy: true,
+            });
+
+            // // expect service to be instanciated
+            // expect(container.getServices()['test-service1'].instance).toBeInstanceOf(TestService1);
+
+            const testProps = {
+                prop1: 'value1',
+                prop2: 'value2',
+            };
+            container.registerProperties(testProps);
+
+            expect(container.getService('test-service1')).toBeInstanceOf(TestService1);
+            expect((container.getService('test-service1') as TestService1).getArg1()).toBe(testProps.prop1);
+        });
+        it('Should register a valid service depending on other properties & services', () => {
+            const container = new Container();
+            const testProps = {
+                prop1: 'value1',
+                prop2: 'value2',
+            };
+            container.registerProperties(testProps);
+
+            container.registerService('test-service1', {
+                clazz: TestService1.prototype,
+                args: {
+                    arg1: '%prop1%',
+                },
+                lazy: false,
+            });
 
             container.registerService('test-service2', {
                 clazz: TestService2.prototype,
@@ -168,6 +227,81 @@ describe('Dependency Injection Container Tests', () => {
                 },
                 lazy: false,
             });
+
+            expect((container.getService('test-service2') as TestService2).getArg2()).toBe(testProps.prop2);
+            expect((container.getService('test-service2') as TestService2).getArg3()).toBeInstanceOf(TestService1);
+            expect((container.getService('test-service2') as TestService2).getArg3().getArg1()).toBe(testProps.prop1);
+        });
+
+        it('Should register a valid service depending on other properties & lazy services', () => {
+            const container = new Container();
+            const testProps = {
+                prop1: 'value1',
+                prop2: 'value2',
+            };
+            container.registerProperties(testProps);
+
+            container.registerService('test-service1', {
+                clazz: TestService1.prototype,
+                args: {
+                    arg1: '%prop1%',
+                },
+                lazy: true,
+            });
+
+            // expect service not instanciated
+            expect(container.getServices()['test-service1'].instance).toBeUndefined();
+
+            container.registerService('test-service2', {
+                clazz: TestService2.prototype,
+                args: {
+                    arg2: '%prop2%',
+                    arg3: '@test-service1',
+                },
+                lazy: true,
+            });
+
+            // expect service not instanciated
+            expect(container.getServices()['test-service2'].instance).toBeUndefined();
+            // expect lazy dependency to not be instanciated because service 2 is still lazy
+            expect(container.getServices()['test-service1'].instance).toBeUndefined();
+
+            expect((container.getService('test-service2') as TestService2).getArg2()).toBe(testProps.prop2);
+            expect((container.getService('test-service2') as TestService2).getArg3()).toBeInstanceOf(TestService1);
+            expect((container.getService('test-service2') as TestService2).getArg3().getArg1()).toBe(testProps.prop1);
+        });
+        it('Should register a valid lazy service depending on other properties & lazy services', () => {
+            const container = new Container();
+            const testProps = {
+                prop1: 'value1',
+                prop2: 'value2',
+            };
+            container.registerProperties(testProps);
+
+            container.registerService('test-service1', {
+                clazz: TestService1.prototype,
+                args: {
+                    arg1: '%prop1%',
+                },
+                lazy: true,
+            });
+
+            // expect service not instanciated
+            expect(container.getServices()['test-service1'].instance).toBeUndefined();
+
+            container.registerService('test-service2', {
+                clazz: TestService2.prototype,
+                args: {
+                    arg2: '%prop2%',
+                    arg3: '@test-service1',
+                },
+                lazy: false,
+            });
+
+            // expect service to be instanciated
+            expect(container.getServices()['test-service2'].instance).toBeInstanceOf(TestService2);
+            // expect lazy dependency to be instanciated because it's required by something that has been instanciated
+            expect(container.getServices()['test-service1'].instance).toBeInstanceOf(TestService1);
 
             expect((container.getService('test-service2') as TestService2).getArg2()).toBe(testProps.prop2);
             expect((container.getService('test-service2') as TestService2).getArg3()).toBeInstanceOf(TestService1);
