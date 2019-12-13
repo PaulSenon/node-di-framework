@@ -1,18 +1,18 @@
 // import ServiceConfig from './Interfaces/ServiceConfig';
 // import ServiceInterface from './Interfaces/ServiceInterface';
 import { rejects } from 'assert';
-import AbstractService, { ServiceInterface } from './Interfaces/AbstractService';
+import { AnyRecord } from 'dns';
+import AbstractService, { ServiceInterface, ServiceInterfaceConstructor } from './Interfaces/AbstractService';
 
 // TODO ID evol mixed type props
 // export type MixedType = string | number | Array<MixedType> | Map<string, MixedType>;
 
 type mixed = string | number | undefined;
 
-type ServiceArgsType = Record<string, mixed | ServiceInterface>;
+type ServiceArgsType = Record<string, any | ServiceInterface>;
 
 interface ServiceConfig {
-    // new (): ServiceInterface<T>;
-    clazz: ServiceInterface;
+    clazz: ServiceInterfaceConstructor;
     instance?: ServiceInterface;
     args: ServiceArgsType;
     lazy: boolean;
@@ -29,7 +29,7 @@ export default class Container {
     private services: Record<string, ServiceConfig>;
 
     // TODO value to mixed type
-    private properties: Record<string, mixed>;
+    private properties: Record<string, any>;
 
     constructor() {
         this.services = {};
@@ -40,11 +40,11 @@ export default class Container {
         return this.services;
     }
 
-    public getProperties(): Record<string, mixed> {
+    public getProperties(): Record<string, any> {
         return this.properties;
     }
 
-    public getProperty(name: string): mixed {
+    public getProperty(name: string): any {
         if (!this.properties[name]) {
             throw new Error(`Contianer's [${name}] property is not defined`);
         }
@@ -66,7 +66,7 @@ export default class Container {
     }
 
     // TODO value mixed type
-    public registerProperty(name: string, value: string): this {
+    public registerProperty(name: string, value: any): this {
         if (this.properties[name]) {
             console.warn(`Dumplicated property. Prop [${name}] will be override`);
         }
@@ -75,7 +75,7 @@ export default class Container {
         return this;
     }
 
-    public registerProperties(properties: Record<string, string>): this {
+    public registerProperties(properties: Record<string, any>): this {
         this.properties = { ...this.properties, ...properties };
         return this;
     }
@@ -92,7 +92,10 @@ export default class Container {
         const processedArgs = this.processArguments(service.args);
 
         // type Constructor = typeof config.Class;
-        const instance = Object.create(service.clazz); // .prototype
+        // const Constructor = service.clazz;
+        // const args = Object.values(processedArgs);
+        // const instance = new Constructor(...args);
+        const instance = Object.create(service.clazz.prototype); // .prototype
         Object.assign(instance, processedArgs);
 
         instance.setContainer(this);

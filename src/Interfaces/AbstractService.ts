@@ -28,3 +28,7 @@ export interface ServiceInterface {
     setContainer(container: Container): this;
     getContainer(): Container;
 }
+
+export interface ServiceInterfaceConstructor {
+    new (...args: any): ServiceInterface;
+}
