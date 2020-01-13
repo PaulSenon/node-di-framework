@@ -1,4 +1,4 @@
-import AbstractService from '../../Interfaces/AbstractService';
+import AbstractService from '../../Abstracts/AbstractService';
 
 export default class TestService3 extends AbstractService {
     private arg1: string;

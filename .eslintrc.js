@@ -2,11 +2,11 @@ module.exports = {
     parser: '@typescript-eslint/parser',
     plugins: ['@typescript-eslint'],
     extends: [
-        "airbnb-typescript/base",
+        // "airbnb-typescript/base",
         "plugin:@typescript-eslint/recommended",
-        "prettier/@typescript-eslint",
-        "plugin:prettier/recommended",
+        // "prettier/@typescript-eslint",
         "plugin:jest/recommended",
+        // "plugin:prettier/recommended",
     ],
     env: {
       "es6": true,
@@ -16,6 +16,11 @@ module.exports = {
       "ecmaVersion": 2019,
       "sourceType": "module"
     },
+    "rules": {
+      "@typescript-eslint/interface-name-prefix": 0,
+      "@typescript-eslint/no-explicit-any": 0,
+      "import/no-cycle": 0,
+    }
     // "extends": [
     //   "airbnb-typescript/base",
     //   "plugin:@typescript-eslint/recommended",

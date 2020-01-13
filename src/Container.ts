@@ -1,29 +1,32 @@
+import IServiceConstructor from './Interfaces/IServiceConstructor';
+import IService from './Interfaces/IService';
+import { TServiceArgs } from './Types/CustomTypes';
+
 // import ServiceConfig from './Interfaces/ServiceConfig';
 // import ServiceInterface from './Interfaces/ServiceInterface';
-import { rejects } from 'assert';
-import { AnyRecord } from 'dns';
-import AbstractService, { ServiceInterface, ServiceInterfaceConstructor } from './Interfaces/AbstractService';
+
+// import { ServiceInterface, ServiceInterfaceConstructor } from './Interfaces/AbstractService';
 
 // TODO ID evol mixed type props
 // export type MixedType = string | number | Array<MixedType> | Map<string, MixedType>;
 
-type mixed = string | number | undefined;
+// type mixed = string | number | undefined;
 
-type ServiceArgsType = Record<string, any | ServiceInterface>;
+// type ServiceArgsType = Record<string, any | ServiceInterface>;
 
 interface ServiceConfig {
-    clazz: ServiceInterfaceConstructor;
-    instance?: ServiceInterface;
-    args: ServiceArgsType;
+    clazz: IServiceConstructor;
+    instance?: IService;
+    args: TServiceArgs;
     lazy: boolean;
 }
 
-function create<T>(Constructor: { new (...args: any[]): T }, args: Record<string, any>): T {
-    const instance = new Constructor();
-    Object.assign(instance, args);
-    console.log(instance);
-    return instance;
-}
+// function create<T>(Constructor: { new (...args: any[]): T }, args: Record<string, any>): T {
+//     const instance = new Constructor();
+//     Object.assign(instance, args);
+//     console.log(instance);
+//     return instance;
+// }
 
 export default class Container {
     private services: Record<string, ServiceConfig>;
@@ -51,7 +54,7 @@ export default class Container {
         return this.properties[name];
     }
 
-    public getService(name: string): ServiceInterface | undefined {
+    public getService(name: string): IService | undefined {
         if (!this.services[name]) {
             throw new Error(`Contianer's [${name}] service is not defined`);
         }
@@ -70,7 +73,6 @@ export default class Container {
         if (this.properties[name]) {
             console.warn(`Dumplicated property. Prop [${name}] will be override`);
         }
-
         this.properties[name] = value;
         return this;
     }
@@ -114,7 +116,7 @@ export default class Container {
     }
 
     // TODO promisify
-    private processArguments(args: ServiceArgsType): ServiceArgsType {
+    private processArguments(args: TServiceArgs): TServiceArgs {
         // return new Promise((resolve, reject) => {
         const serviceRegex = /^@(.*)$/;
         const propertiesRegex = /^%(.*)%$/;
